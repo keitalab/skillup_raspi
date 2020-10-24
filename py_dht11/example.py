@@ -17,6 +17,7 @@ try:
 	        print("Last valid input: " + str(datetime.datetime.now()))
 
 	        print("Temperature: %-3.1f C" % result.temperature)
+	        #print("Humidity: %d %%" % result.humidity)
 
 	    time.sleep(3)
 
