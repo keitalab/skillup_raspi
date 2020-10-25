@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Show SHT11 Data Graph</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.24.0/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@1.8.0"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="text-center">
+        <h1>Temperature</h1>
+    </div>
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+    
+<script>
+//socket.ioへの接続
+let socket = io.connect();
+let currentTemperVal = 0.0;
+
+//グラフの設定
+let lineConfig = {
+    type: "line",
+    data: {
+      datasets: [{
+        label: "temperature",
+        borderWidth: 2,
+        borderColor: 'rgb(0, 164, 227)',
+        backgroundColor: 'rgb(0, 164, 227)',
+        pointRadius: 2,
+        lineTension: 0,
+        fill: false,
+        data: []      
+        }]
+      },
+    options: {
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: false,
+            suggestedMax: 60,
+            suggestedMin: -20,
+            stepSize: 5
+          }
+        }],
+        xAxes: [{
+          type: "realtime",
+          realtime:{
+            duration: 15000,
+            refresh: 500,
+            delay: 1000,
+            onRefresh: lineOnRefresh
+          },
+          scaleLabel:{
+            display: true,
+            labelString: "Time",
+            fontSize: 15
+          }
+        }]
+      },
+      legend: {
+        display: true,
+        position: "top",
+        labels: {fontSize: 10}
+      },
+      responsive: true
+    }
+};
+
+//リフレッシュ関数
+function lineOnRefresh(chart){
+    if(currentTemperVal === 0.0 || currentTemperVal === undefined || currentTemperVal === null){
+        return;
+    }
+    chart.config.data.datasets[0].data.push({
+      x: Date.now(),
+      y: currentTemperVal
+    });
+}
+
+//グラフ描画
+//draw a chart
+window.onload = () => {
+    let canvas = $('#myChart');
+    let ctx = canvas[0].getContext('2d');
+    window.myChart = new Chart(ctx, lineConfig);
+}
+
+//接続中にdata_from_serverイベントをキャッチしたら呼ばれる
+socket.on('data_from_server', (data) => {
+    console.log(data);
+    currentTemperVal = data;
+});
+</script>
+</body>
+</html>

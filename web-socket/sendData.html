@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Receive Data on Socket</title>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Received no data</h1>
+<script>
+    $(() => {
+        //socket.ioへの接続
+        let socket = io.connect();
+
+        //接続中にdata_from_serverイベントをキャッチしたら呼ばれる
+        socket.on('data_from_server', (data) => {
+            console.log(data);
+            $('h1').html(data);
+        });
+    })
+</script>
+</body>
+</html>
